@@ -1,5 +1,7 @@
 import readline from "readline";
-import { getProposedCommits, applyCommits } from "@git-helper/core";
+import { getProposedCommits, applyCommits, LLMConfig } from "@git-helper/core";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
 function askQuestion(query: string): Promise<string> {
   const rl = readline.createInterface({
@@ -15,9 +17,66 @@ function askQuestion(query: string): Promise<string> {
   });
 }
 
+const argv = yargs(hideBin(process.argv))
+  .option("endpoint", {
+    type: "string",
+    description: "LLM endpoint URL",
+    demandOption: true,
+  })
+  .option("apiKey", {
+    type: "string",
+    description: "API key for LLM",
+    demandOption: true,
+  })
+  .option("model", {
+    type: "string",
+    default: "meta-llama/Meta-Llama-3.3-70B-Instruct",
+    description: "Model name",
+  })
+  .option("language", {
+    type: "string",
+    default: "en",
+    description: "Language of the commit messages",
+  })
+  .help()
+  .alias("help", "h").argv;
+
+export async function getLLMConfig(): Promise<LLMConfig> {
+  const argv = await yargs(hideBin(process.argv))
+    .option("endpoint", {
+      type: "string",
+      description: "LLM endpoint URL",
+      demandOption: true,
+    })
+    .option("apiKey", {
+      type: "string",
+      description: "API key for LLM",
+      demandOption: true,
+    })
+    .option("model", {
+      type: "string",
+      default: "meta-llama/Meta-Llama-3.3-70B-Instruct",
+      description: "Model name",
+    })
+    .option("language", {
+      type: "string",
+      default: "en",
+      description: "Language of the commit messages",
+    })
+    .help()
+    .alias("help", "h")
+    .parse(); // не забудь вызвать parse()
+
+  return {
+    endpoint: argv.endpoint,
+    apiKey: argv.apiKey,
+    model: argv.model,
+    language: argv.language as "en" | "ru",
+  };
+}
 async function main() {
   try {
-    const commits = await getProposedCommits();
+    const commits = await getProposedCommits(await getLLMConfig());
 
     if (commits.length === 0) {
       console.log("No commits proposed.");

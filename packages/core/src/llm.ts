@@ -1,5 +1,5 @@
 import { get_encoding } from "@dqbd/tiktoken";
-import { getLLMConfig } from "./config.js";
+import { LLMConfig } from "./config.js";
 
 function getSystemPrompt(lang: "ru" | "en"): string {
   if (lang === "en") {
@@ -7,7 +7,7 @@ function getSystemPrompt(lang: "ru" | "en"): string {
 
 Requirements:
 - Respond with **pure JSON array**, no comments, no text.
-- Each object: title (imperative, ≤50 chars), description (optional), files (array of "filePath — change summary").
+- Each object: title (imperative, ≤50 chars), description (optional), files (array of "filePath").
 - Do not mix unrelated changes.
 - A file must belong to only one commit.
 
@@ -17,8 +17,8 @@ Example:
     "title": "Fix login button alignment",
     "description": "Adjusted CSS styles on homepage",
     "files": [
-      "src/components/LoginButton.tsx — CSS fix",
-      "src/styles/login.css — updated styles"
+      "src/components/LoginButton.tsx",
+      "src/styles/login.css"
     ]
   }
 ]`;
@@ -28,7 +28,7 @@ Example:
 
 Обязательно:
 - Отвечай только **чистым JSON-массивом**, без текста и комментариев.
-- Каждый объект содержит: title (до 50 символов, повелительное наклонение), description (опционально), files (массив "путь — краткое описание").
+- Каждый объект содержит: title (до 50 символов, повелительное наклонение), description (опционально), files (массив "путь").
 - Не смешивай разные задачи.
 - Один файл не может быть в нескольких коммитах.
 
@@ -38,8 +38,8 @@ Example:
     "title": "Поправь выравнивание кнопки логина",
     "description": "Исправлены стили на главной",
     "files": [
-      "src/components/LoginButton.tsx — исправлен CSS",
-      "src/styles/login.css — обновлены стили"
+      "src/components/LoginButton.tsx,
+      "src/styles/login.css"
     ]
   }
 ]`;
@@ -65,9 +65,10 @@ export interface Commit {
   files: string[];
 }
 
-export async function analyzeDiffChunk(diffChunk: string): Promise<string> {
-  const config = getLLMConfig();
-
+export async function analyzeDiffChunk(
+  diffChunk: string,
+  config: LLMConfig
+): Promise<string> {
   const response = await fetch(config.endpoint, {
     method: "POST",
     headers: {
@@ -118,12 +119,15 @@ export async function analyzeDiffChunk(diffChunk: string): Promise<string> {
   return result.trim();
 }
 
-export async function analyzeGitDiff(fullDiff: string): Promise<Commit[]> {
+export async function analyzeGitDiff(
+  fullDiff: string,
+  config: LLMConfig
+): Promise<Commit[]> {
   const chunks = splitDiffIntoTokenSafeChunks(fullDiff, MAX_INPUT_TOKENS);
   const results: string[] = [];
 
   for (const chunk of chunks) {
-    const result = await analyzeDiffChunk(chunk);
+    const result = await analyzeDiffChunk(chunk, config);
     results.push(result);
   }
 

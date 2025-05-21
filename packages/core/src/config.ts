@@ -1,6 +1,8 @@
 export interface LLMConfig {
-  endpoint: string;
-  apiKey: string;
+  type: "openai" | "llama" | "claude" | "mistral" | "custom";
   model: string;
-  language: "ru" | "en";
+  apiKey: string;
+  endpoint: string;
+  language: "en" | "ru";
+  authHeaderKey: 'Authorization' | 'X-Auth-Token'
 }

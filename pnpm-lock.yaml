@@ -14,7 +14,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@git-helper/core':
+      '@aktools/git-helper-core':
         specifier: workspace:*
         version: link:../core
       yargs:
@@ -46,7 +46,7 @@ importers:
 
   packages/vs-code-ext:
     dependencies:
-      '@git-helper/core':
+      '@aktools/git-helper-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

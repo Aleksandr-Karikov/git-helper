@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import readline from "readline";
 import { getProposedCommits, applyCommits, LLMConfig } from "@git-helper/core";
 import yargs from "yargs";

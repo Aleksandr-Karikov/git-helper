@@ -17,30 +17,6 @@ function askQuestion(query: string): Promise<string> {
   });
 }
 
-const argv = yargs(hideBin(process.argv))
-  .option("endpoint", {
-    type: "string",
-    description: "LLM endpoint URL",
-    demandOption: true,
-  })
-  .option("apiKey", {
-    type: "string",
-    description: "API key for LLM",
-    demandOption: true,
-  })
-  .option("model", {
-    type: "string",
-    default: "meta-llama/Meta-Llama-3.3-70B-Instruct",
-    description: "Model name",
-  })
-  .option("language", {
-    type: "string",
-    default: "en",
-    description: "Language of the commit messages",
-  })
-  .help()
-  .alias("help", "h").argv;
-
 export async function getLLMConfig(): Promise<LLMConfig> {
   const argv = await yargs(hideBin(process.argv))
     .option("endpoint", {
@@ -65,7 +41,7 @@ export async function getLLMConfig(): Promise<LLMConfig> {
     })
     .help()
     .alias("help", "h")
-    .parse(); // не забудь вызвать parse()
+    .parse();
 
   return {
     endpoint: argv.endpoint,

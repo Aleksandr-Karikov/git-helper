@@ -1,5 +1,5 @@
 {
-    "name": "git-helper",
+    "name": "@aktools/git-helper",
     "version": "1.0.0",
     "private": true,
     "scripts": {

@@ -1,11 +1,11 @@
 {
-  "name": "@git-helper/cli",
-  "version": "0.1.0-alpha.0",
+  "name": "@aktools/git-helper-cli",
+  "version": "0.1.0-alpha.3",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "git-helper": "./dist/index.js"
+    "git-helper": "dist/index.js"
   },
   "files": [
     "dist"
@@ -15,10 +15,11 @@
   },
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "publish:next": "./publish.sh"
   },
   "dependencies": {
-    "@git-helper/core": "workspace:*",
+    "@aktools/git-helper-core": "workspace:*",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

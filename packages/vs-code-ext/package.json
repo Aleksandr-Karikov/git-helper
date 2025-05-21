@@ -1,5 +1,5 @@
 {
-  "name": "git-helper-vscode",
+  "name": "@aktools/git-helper-vscode",
   "displayName": "git-helper",
   "description": "AI assistant to help with git tools",
   "version": "0.0.1",
@@ -33,7 +33,7 @@
     "test": "vscode-test"
   },
   "dependencies": {
-    "@git-helper/core": "workspace:*"
+    "@aktools/git-helper-core": "workspace:*"
   },
   "devDependencies": {
     "@types/vscode": "^1.100.0",

@@ -59,22 +59,14 @@ const MAX_INPUT_TOKENS = MAX_TOTAL_TOKENS - MAX_NEW_TOKENS;
 
 const enc = get_encoding("cl100k_base");
 
-export interface Commit {
-  title: string;
-  description: string;
-  files: string[];
-}
-
-export async function analyzeDiffChunk(
-  diffChunk: string,
-  config: LLMConfig
-): Promise<string> {
+async function fetchOpenAICompatibleLLM(diffChunk: string, config: LLMConfig): Promise<string> {
   const response = await fetch(config.endpoint, {
     method: "POST",
     headers: {
       Accept: "text/event-stream",
       "Content-Type": "application/json",
-      Authorization: `Bearer ${config.apiKey}`,
+      [config.authHeaderKey]: config.authHeaderKey === 'Authorization' ? `Bearer ${config.apiKey}` : config.apiKey,
+      
     },
     body: JSON.stringify({
       model: config.model,
@@ -82,11 +74,9 @@ export async function analyzeDiffChunk(
         { role: "system", content: getSystemPrompt(config.language) },
         { role: "user", content: USER_PROMPT(diffChunk) },
       ],
-      max_new_tokens: MAX_NEW_TOKENS,
-      stream: true,
+      max_tokens: MAX_NEW_TOKENS.toString(),
     }),
   });
-
   if (!response.body) throw new Error("Failed to get stream");
 
   const reader = response.body.getReader();
@@ -119,20 +109,49 @@ export async function analyzeDiffChunk(
   return result.trim();
 }
 
-export async function analyzeGitDiff(
-  fullDiff: string,
+export interface Commit {
+  title: string;
+  description: string;
+  files: string[];
+}
+
+async function fetchClaudeCompatibleLLM(diffChunk: string, config: LLMConfig): Promise<string> {
+  const prompt = `${getSystemPrompt(config.language)}\n\n${USER_PROMPT(diffChunk)}`;
+
+  const response = await fetch(config.endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": config.apiKey,
+    },
+    body: JSON.stringify({
+      model: config.model,
+      prompt,
+      max_tokens_to_sample: MAX_NEW_TOKENS,
+      stream: false, // или true, если нужен SSE-парсинг
+    }),
+  });
+
+  const json = await response.json() as { completion: string };
+  return json.completion || "";
+}
+
+
+export async function analyzeDiffChunk(
+  diffChunk: string,
   config: LLMConfig
-): Promise<Commit[]> {
-  const chunks = splitDiffIntoTokenSafeChunks(fullDiff, MAX_INPUT_TOKENS);
-  const results: string[] = [];
-
-  for (const chunk of chunks) {
-    const result = await analyzeDiffChunk(chunk, config);
-    results.push(result);
+): Promise<string> {
+  switch (config.type) {
+    case "openai":
+    case "llama":
+    case "mistral":
+      return fetchOpenAICompatibleLLM(diffChunk, config);
+    case "claude":
+      return fetchClaudeCompatibleLLM(diffChunk, config);
+    case "custom":
+    default:
+      throw new Error(`Unsupported LLM type: ${config.type}`);
   }
-
-  const combined = results.join("");
-  return JSON.parse(combined) as Commit[];
 }
 
 function splitDiffIntoTokenSafeChunks(
@@ -211,4 +230,21 @@ function splitDiffIntoTokenSafeChunks(
   }
 
   return chunks;
+}
+
+
+export async function analyzeGitDiff(
+  fullDiff: string,
+  config: LLMConfig
+): Promise<Commit[]> {
+  const chunks = splitDiffIntoTokenSafeChunks(fullDiff, MAX_INPUT_TOKENS);
+  const results: string[] = [];
+  
+  for (const chunk of chunks) {
+    const result = await analyzeDiffChunk(chunk, config);
+    results.push(result);
+  }
+
+  const combined = results.join("");
+  return JSON.parse(combined) as Commit[];
 }

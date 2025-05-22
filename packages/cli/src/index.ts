@@ -44,12 +44,6 @@ export async function getLLMConfig(): Promise<LLMConfig> {
       default: "en",
       description: "Language of the commit messages",
     })
-    .option("authHeaderKey", {
-      type: "string",
-      choices: ["Authorization", "X-Auth-Token"],
-      default: "Authorization",
-      description: "Header key",
-    })
     .help()
     .alias("help", "h")
     .parse();
@@ -60,7 +54,6 @@ export async function getLLMConfig(): Promise<LLMConfig> {
     apiKey: argv.apiKey,
     model: argv.model,
     language: argv.language as LLMConfig['language'],
-    authHeaderKey: argv.authHeaderKey as LLMConfig['authHeaderKey'],
   };
 }
 

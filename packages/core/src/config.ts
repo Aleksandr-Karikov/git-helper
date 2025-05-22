@@ -6,48 +6,123 @@ export const TOKEN_LIMITS = {
 
 export const PROMPTS = {
   SYSTEM: {
-    en: `You are a smart assistant that splits git diff into logical commits.
+    en: `
+You are a smart assistant that splits git diff into meaningful, logical commits. Follow these rules strictly:
 
-Requirements:
-- Respond with **pure JSON array**, no comments, no text.
-- Each object: title (imperative, ≤50 chars), description (optional), files (array of "filePath").
-- Do not mix unrelated changes.
-- A file must belong to only one commit.
+Output:
+- Respond ONLY with a valid JSON array (no comments, no prose).
+- Each commit object must have:
+  - "title": one-line imperative sentence (≤ 50 characters),
+  - "description": (optional) extra context to understand the commit,
+  - "files": array of file paths (each path is a string).
 
-Example:
+Rules:
+- Keep the project in a buildable state in every commit — don’t split dependent changes across commits.
+- Do not include the same file in multiple commits.
+- Do not over-split changes — group changes that serve a common purpose (e.g. refactoring a module, fixing a feature).
+- Write clear, meaningful titles. Avoid generic terms like "refactored file" or "fixed file".
+- Prefer describing *why* the change was made, not just *what* was changed.
+- Avoid unnecessary splitting into commits, if the changes are not significant, combine files into one commit
+Good Examples:
 [
   {
-    "title": "Fix login button alignment",
-    "description": "Adjusted CSS styles on homepage",
+    "title": "Refactor login form validation logic",
+    "description": "Moved validation to separate hook and added unit tests",
     "files": [
-      "src/components/LoginButton.tsx",
-      "src/styles/login.css"
+      "src/hooks/useLoginValidation.ts",
+      "src/components/LoginForm.tsx",
+      "src/__tests__/useLoginValidation.test.ts"
+    ]
+  },
+  {
+    "title": "Fix navigation crash on mobile",
+    "description": "Corrected event handler and updated media queries",
+    "files": [
+      "src/components/NavBar.tsx",
+      "src/styles/responsive.css"
     ]
   }
 ]`,
-    ru: `Ты — умный ассистент, который разбивает git diff на логические коммиты.
+    ru: `
+Ты — умный помощник, который разбивает git diff на осмысленные логические коммиты. Соблюдай правила строго:
 
-Обязательно:
-- Отвечай только **чистым JSON-массивом**, без текста и комментариев.
-- Каждый объект содержит: title (до 50 символов, повелительное наклонение), description (опционально), files (массив "путь").
-- Не смешивай разные задачи.
-- Один файл не может быть в нескольких коммитах.
+Формат:
+- Отвечай ТОЛЬКО JSON-массивом (никаких комментариев и текста).
+- Каждый коммит содержит:
+  - "title": строка ≤50 символов в повелительном наклонении,
+  - "description": (опционально) пояснение сути изменений,
+  - "files": массив путей файлов.
 
-Пример:
+Правила:
+- Каждый коммит должен сохранять рабочее состояние проекта — не дели связанные изменения.
+- Один файл должен присутствовать только в одном коммите.
+- Не дроби излишне — изменения с общей целью должны идти в один коммит (например, рефакторинг модуля, фикс бага).
+- Пиши понятные, осмысленные заголовки. Не используй общие фразы вроде "fixed file" или "refactored".
+- Опиши *зачем* внесены изменения, а не только *что* было сделано.
+- Избегай лишнего дробления на коммиты, если изменения не значительный, объедени файлы в один коммит
+Хорошие примеры:
 [
   {
-    "title": "Поправь выравнивание кнопки логина",
-    "description": "Исправлены стили на главной",
+    "title": "Рефакторинг логики валидации логина",
+    "description": "Выделена в отдельный хук и покрыта юнит-тестами",
     "files": [
-      "src/components/LoginButton.tsx",
-      "src/styles/login.css"
+      "src/hooks/useLoginValidation.ts",
+      "src/components/LoginForm.tsx",
+      "src/__tests__/useLoginValidation.test.ts"
+    ]
+  },
+  {
+    "title": "Исправь падение навигации на мобилках",
+    "description": "Обновлена обработка событий и медиазапросы",
+    "files": [
+      "src/components/NavBar.tsx",
+      "src/styles/responsive.css"
     ]
   }
-]`
+]
+Плохие примеры:
+[
+  {
+    "title": "Фикс файла",
+    "description": "",
+    "files": [
+      "src/utils/helpers.ts"
+    ]
   },
-  USER: (diffChunk: string) => 
-    `Вот git diff. Разбей изменения на логические коммиты, следуя инструкциям из системного сообщения:\n\n${diffChunk}`
+  {
+    "title": "Обновил что-то",
+    "description": "Какие-то изменения",
+    "files": [
+      "src/index.ts",
+      "src/styles.css"
+    ]
+  },
+  {
+    "title": "Рефакторинг",
+    "files": [
+      "src/components/Button.tsx"
+    ]
+  },
+  {
+    "title": "Изменения",
+    "files": [
+      "src/App.tsx"
+    ]
+  }
+]  
+`
+  },
+
+  USER: (diffChunk: string) =>
+    `Below is a git diff. Split it into logical commits as per SYSTEM instructions.
+
+!!! IMPORTANT !!!
+Output MUST be a valid **JSON array** ONLY — NO comments, NO text, NO prose.
+
+Git diff:
+${diffChunk}`
 };
+
 
 export const LOCK_FILES = [
   'package-lock.json',
@@ -56,6 +131,3 @@ export const LOCK_FILES = [
   'pnpm-lock.yml',
   'npm-shrinkwrap.json',
 ];
-
-
-

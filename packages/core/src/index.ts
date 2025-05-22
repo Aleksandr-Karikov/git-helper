@@ -4,12 +4,11 @@ import {
   gitAddFiles,
   createCommit,
   generateDiffForNewFiles,
-  Commit
-} from "./git/index.js";
-import { DiffAnalyzer } from "./llm/index.js";
-import { LLMConfig } from "./types.js";
-export * from './types.js'
-
+  Commit,
+} from './git/index.js';
+import { DiffAnalyzer } from './llm/index.js';
+import { LLMConfig } from './types.js';
+export * from './types.js';
 
 export async function getProposedCommits(config: LLMConfig) {
   const gitDiff = getGitDiff();
@@ -17,7 +16,7 @@ export async function getProposedCommits(config: LLMConfig) {
 
   const newFilesDiff = await generateDiffForNewFiles(newFiles);
 
-  const combinedDiff = gitDiff + "\n" + newFilesDiff;
+  const combinedDiff = gitDiff + '\n' + newFilesDiff;
 
   const commits = await DiffAnalyzer.analyzeGitDiff(combinedDiff, config);
   return commits;

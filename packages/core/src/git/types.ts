@@ -1,6 +1,5 @@
 export interface Commit {
-    title: string;
-    description?: string;
-    files: string[];
-  }
-  
+  title: string;
+  description?: string;
+  files: string[];
+}

@@ -50,4 +50,4 @@ Git diff:
 ${diffChunk}`,
 };
 
-export const LOCK_FILES = ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'pnpm-lock.yml', 'npm-shrinkwrap.json'];
+

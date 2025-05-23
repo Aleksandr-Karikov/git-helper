@@ -4,4 +4,5 @@ export interface LLMConfig {
   apiKey: string;
   model: string;
   language: 'ru' | 'en';
+  hiddenFiles?: (string | RegExp)[];
 }

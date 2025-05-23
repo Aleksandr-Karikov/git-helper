@@ -25,7 +25,7 @@ export class LLMClientFactory {
 
 export class DiffAnalyzer {
   public static async analyzeGitDiff(fullDiff: string, config: LLMConfig): Promise<Commit[]> {
-    const processedDiffs = DiffProcessor.process(fullDiff);
+    const processedDiffs = DiffProcessor.process(fullDiff, config.hiddenFiles);
     const chunks = this.splitIntoTokenSafeChunks(processedDiffs);
     const client = LLMClientFactory.createClient(config.type);
 
@@ -71,20 +71,14 @@ export class DiffAnalyzer {
     const parts = cleaned.split('</think>');
     return parts[1];
   }
-  
 
   private static parseResults(results: string[]): Commit[] {
-
     try {
-      const parsed = results
-        .filter(Boolean)
-        .map((r) => JSON.parse(this.cleanResponse(r)) as Commit[]);
-  
+      const parsed = results.filter(Boolean).map((r) => JSON.parse(this.cleanResponse(r)) as Commit[]);
+
       return parsed.flat();
     } catch (error) {
       throw new Error(`Failed to parse LLM response: ${(error as Error).message}\nRaw: ${results.join('\n---\n')}`);
     }
   }
-  
-  
 }

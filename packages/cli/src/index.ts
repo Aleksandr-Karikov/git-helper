@@ -35,11 +35,11 @@ export async function getLLMConfig(): Promise<LLMConfig> {
       default: 'en',
       description: 'Language of the commit messages',
     })
-    .option('language', {
-      type: 'string',
-      choices: ['en', 'ru'],
-      default: 'en',
-      description: 'Language of the commit messages',
+    .option('hiddenFiles', {
+      type: 'array',
+      string: true,
+      description: 'List of lock files or regex patterns to hide from diff',
+      default: ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'pnpm-lock.yml', 'npm-shrinkwrap.json'],
     })
     .help()
     .alias('help', 'h')
@@ -51,6 +51,7 @@ export async function getLLMConfig(): Promise<LLMConfig> {
     apiKey: argv.apiKey,
     model: argv.model,
     language: argv.language as LLMConfig['language'],
+    hiddenFiles: argv.hiddenFiles,
   };
 }
 

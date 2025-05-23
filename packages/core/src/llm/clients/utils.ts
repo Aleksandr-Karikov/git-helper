@@ -1,5 +1,4 @@
 import { get_encoding, Tiktoken } from '@dqbd/tiktoken';
-import { LOCK_FILES } from '../../config.js';
 
 export class Tokenizer {
   private static encoder: Tiktoken = get_encoding('cl100k_base');
@@ -31,25 +30,32 @@ export class Tokenizer {
 }
 
 export class DiffProcessor {
-  static process(diff: string): string[] {
-    return diff
-      .split(/^diff --git .+$/gm)
-      .filter(Boolean)
-      .map(DiffProcessor.hideLockFiles);
+  static process(diff: string, hiddenFilePatterns: (string | RegExp)[] = []): string[] {
+    const fileDiffs = diff.split(/^diff --git .+$/gm).filter(Boolean);
+
+    return fileDiffs.map((fd) => DiffProcessor.hideMatchedFiles(fd, hiddenFilePatterns));
   }
 
-  private static hideLockFiles(fileDiff: string): string {
+  private static hideMatchedFiles(fileDiff: string, patterns: (string | RegExp)[]): string {
     const fileNameMatch = fileDiff.match(/^diff --git a\/(.+?) b\/.+$/m);
     if (!fileNameMatch) return fileDiff;
 
     const fileName = fileNameMatch[1];
-    if (!LOCK_FILES.some((lf) => fileName.endsWith(lf))) return fileDiff;
+
+    const shouldHide = patterns.some((pattern) => {
+      if (typeof pattern === 'string') {
+        return fileName.endsWith(pattern);
+      }
+      return pattern.test(fileName);
+    });
+
+    if (!shouldHide) return fileDiff;
 
     return `diff --git a/${fileName} b/${fileName}
-  --- a/${fileName}
-  +++ b/${fileName}
-  @@ LOCK FILE CHANGES HIDDEN @@
-  + [lock file changes hidden due to size]
-  `;
+--- a/${fileName}
++++ b/${fileName}
+@@ LOCK FILE CHANGES HIDDEN @@
++ [lock file changes hidden due to size]
+`;
   }
 }

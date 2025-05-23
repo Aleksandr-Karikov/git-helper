@@ -5,4 +5,5 @@ export interface LLMConfig {
   model: string;
   language: 'ru' | 'en';
   hiddenFiles?: (string | RegExp)[];
+  splitStrategy: 'single' | 'multiple';
 }

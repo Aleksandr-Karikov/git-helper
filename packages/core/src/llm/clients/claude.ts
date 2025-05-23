@@ -12,7 +12,7 @@ export class ClaudeClient implements LLMClient {
       },
       body: JSON.stringify({
         model: config.model,
-        prompt: `${PROMPTS.SYSTEM(config.language === 'en' ? 'English' : 'Russian')}\n\n${PROMPTS.USER(diffChunk)}`,
+        prompt: `${PROMPTS.SYSTEM(config.language === 'en' ? 'English' : 'Russian', config.splitStrategy)}\n\n${PROMPTS.USER(diffChunk)}`,
         max_tokens_to_sample: TOKEN_LIMITS.NEW_TOKENS,
         stream: false,
       }),

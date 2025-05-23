@@ -19,6 +19,12 @@ export async function getLLMConfig(): Promise<LLMConfig> {
       description: 'LLM endpoint URL',
       demandOption: true,
     })
+    .option('splitStrategy', {
+      type: 'string',
+      description: 'Split strategy, single or multiple commits for changes',
+      choices: ['single', 'multiple'],
+      default: 'single',
+    })
     .option('apiKey', {
       type: 'string',
       description: 'API key for LLM',

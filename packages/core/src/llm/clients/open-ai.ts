@@ -28,7 +28,7 @@ export class OpenAIClient implements LLMClient {
       model: config.model,
       messages: [
         // TODO language map
-        { role: 'system', content: PROMPTS.SYSTEM(config.language === 'en' ? 'English' : 'Russian') },
+        { role: 'system', content: PROMPTS.SYSTEM(config.language === 'en' ? 'English' : 'Russian', config.splitStrategy) },
         { role: 'user', content: PROMPTS.USER(diffChunk) },
       ],
       max_tokens: TOKEN_LIMITS.NEW_TOKENS,
